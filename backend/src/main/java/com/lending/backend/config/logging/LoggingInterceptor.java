@@ -1,6 +1,5 @@
 package com.lending.backend.config.logging;
 
-import com.lending.backend.utils.LogUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -9,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import com.lending.backend.common.utils.LogUtils;
 
 /**
  * Interceptor for setting up and clearing logging context for each request.
@@ -27,8 +28,8 @@ public class LoggingInterceptor implements HandlerInterceptor {
             @NonNull final Object handler) {
         try {
             LogUtils.setupRequestContext();
-            log.info("Request started: {} {}", 
-                    request.getMethod(), 
+            log.info("Request started: {} {}",
+                    request.getMethod(),
                     getRequestUri(request));
         } catch (Exception e) {
             log.warn("Failed to setup request logging context", e);
@@ -44,14 +45,14 @@ public class LoggingInterceptor implements HandlerInterceptor {
             @Nullable final Exception ex) {
         try {
             if (ex != null) {
-                log.error("Request failed: {} {}", 
-                        request.getMethod(), 
-                        getRequestUri(request), 
+                log.error("Request failed: {} {}",
+                        request.getMethod(),
+                        getRequestUri(request),
                         ex);
             } else {
-                log.info("Request completed: {} {} - Status: {}", 
-                        request.getMethod(), 
-                        getRequestUri(request), 
+                log.info("Request completed: {} {} - Status: {}",
+                        request.getMethod(),
+                        getRequestUri(request),
                         response.getStatus());
             }
         } catch (Exception e) {
@@ -64,7 +65,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
             }
         }
     }
-    
+
     private String getRequestUri(@NonNull final HttpServletRequest request) {
         try {
             return request.getRequestURI();

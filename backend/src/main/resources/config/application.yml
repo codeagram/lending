@@ -1,28 +1,50 @@
 spring:
+  application:
+    name: lending-backend
+  # The default active profile is set to 'dev' for a better local development experience.
+  # This can be overridden by setting the SPRING_PROFILES_ACTIVE environment variable.
   profiles:
     active: dev
 
-  application:
-    name: lending-backend
-    
+  jpa:
+    # Enabled by default for development and testing; will be disabled in production.
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        # This property is beneficial for both test and prod environments.
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+  # Default security credentials should not be hardcoded.
+  # These should be set via environment variables or a secret management tool.
   security:
     user:
-      name: admin
-      password: admin
+      name: ${APP_USER_NAME:admin}
+      password: ${APP_USER_PASSWORD:admin} # Avoid default passwords in version control.
+
+# Default logging levels
+logging:
+  level:
+    root: INFO
+    com.lending.backend: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.flywaydb: INFO
+
+server:
+  # Default port is 8080, can be overridden in profiles.
+  port: ${SERVER_PORT:8080}
+  # Graceful shutdown is a good practice for all environments.
+  shutdown: graceful
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
-logging:
-  level:
-    root: INFO
-    "[org.springframework.web]": INFO
-    "[org.hibernate.SQL]": DEBUG
-    "[org.hibernate.type.descriptor.sql.BasicBinder]": TRACE
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized

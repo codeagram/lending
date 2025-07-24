@@ -20,65 +20,60 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/test/errors/unauthorized",
-                    "/api/test/errors/forbidden"
-                ).authenticated()
-                .requestMatchers("/api/test/errors/forbidden").hasRole("ADMIN")
-                .requestMatchers(
-                    "/api/test/errors/**",
-                    "/error"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-            .exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.getWriter().write(
-                        "{\"status\": 401, \"error\": \"Unauthorized\", \"message\": \"Authentication required\"}"
-                    );
-                })
-            )
-            .httpBasic(Customizer.withDefaults())
-            .headers(headers -> headers
-                .httpStrictTransportSecurity(hsts -> hsts
-                    .includeSubDomains(true)
-                    .preload(true)
-                )
-                .frameOptions(frame -> frame.sameOrigin())
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'")
-                )
-            );
-        
-        return http.build();
-    }
-    
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(
+								"/api/test/errors/unauthorized",
+								"/api/test/errors/forbidden")
+						.authenticated()
+						.requestMatchers("/api/test/errors/forbidden").hasRole("ADMIN")
+						.requestMatchers(
+								"/api/test/errors/**",
+								"/error")
+						.permitAll()
+						.anyRequest().authenticated())
+				.exceptionHandling(exception -> exception
+						.authenticationEntryPoint((request, response, authException) -> {
+							response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+							response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+							response.getWriter().write(
+									"{\"status\": 401, \"error\": \"Unauthorized\", \"message\": \"Authentication required\"}");
+						}))
+				.httpBasic(Customizer.withDefaults())
+				.headers(headers -> headers
+						.httpStrictTransportSecurity(hsts -> hsts
+								.includeSubDomains(true)
+								.preload(true))
+						.frameOptions(frame -> frame.sameOrigin())
+						.contentSecurityPolicy(csp -> csp
+								.policyDirectives(
+										"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'")));
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.builder()
-            .username("user")
-            .password(passwordEncoder.encode("password"))
-            .roles("USER")
-            .build();
+		return http.build();
+	}
 
-        UserDetails admin = User.builder()
-            .username("admin")
-            .password(passwordEncoder.encode("admin"))
-            .roles("ADMIN")
-            .build();
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-        return new InMemoryUserDetailsManager(user, admin);
-    }
+	@Bean
+	public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+		UserDetails user = User.builder()
+				.username("user")
+				.password(passwordEncoder.encode("password"))
+				.roles("USER")
+				.build();
+
+		UserDetails admin = User.builder()
+				.username("admin")
+				.password(passwordEncoder.encode("admin"))
+				.roles("ADMIN")
+				.build();
+
+		return new InMemoryUserDetailsManager(user, admin);
+	}
 }

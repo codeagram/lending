@@ -1,14 +1,16 @@
 package com.lending.backend.config;
 
-import com.lending.backend.config.logging.LoggingInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.lending.backend.config.logging.LoggingInterceptor;
+
 /**
- * Web configuration class for registering interceptors and other web-related configurations.
+ * Web configuration class for registering interceptors and other web-related
+ * configurations.
  */
 @Configuration
 @RequiredArgsConstructor
@@ -27,7 +29,6 @@ public class WebConfig implements WebMvcConfigurer {
                         "/swagger-resources/**",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
-                        "/webjars/**"
-                );
+                        "/webjars/**");
     }
 }
