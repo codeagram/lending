@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,14 +26,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public ApiProblemDetail handleApiException(ApiException ex, HttpServletRequest request) {
         String requestId = ex.getRequestId() != null ? ex.getRequestId() : generateRequestId();
-        
+
         ApiProblemDetail problemDetail = ProblemDetailBuilder.createProblemDetail(
                 ex.getStatus(),
                 ex.getCode(),
                 ex.getMessage(),
-                requestId
-        );
-        
+                requestId);
+
         problemDetail.setProperty("errorType", ex.getClass().getSimpleName());
         return problemDetail;
     }
@@ -54,21 +52,19 @@ public class GlobalExceptionHandler {
                 ErrorConstants.VALIDATION_ERROR,
                 ErrorConstants.MSG_VALIDATION_ERROR,
                 requestId,
-                errors
-        );
+                errors);
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ApiProblemDetail handleAuthenticationException(AuthenticationException ex) {
         String requestId = generateRequestId();
-        
+
         ApiProblemDetail problemDetail = ProblemDetailBuilder.createProblemDetail(
                 HttpStatus.UNAUTHORIZED,
                 ErrorConstants.AUTHENTICATION_ERROR,
                 ex.getMessage(),
-                requestId
-        );
-        
+                requestId);
+
         problemDetail.setProperty("errorType", ex.getClass().getSimpleName());
         return problemDetail;
     }
@@ -76,14 +72,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ApiProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
         String requestId = generateRequestId();
-        
+
         ApiProblemDetail problemDetail = ProblemDetailBuilder.createProblemDetail(
                 HttpStatus.FORBIDDEN,
                 ErrorConstants.ACCESS_DENIED,
                 "Access Denied: " + ex.getMessage(),
-                requestId
-        );
-        
+                requestId);
+
         problemDetail.setProperty("errorType", ex.getClass().getSimpleName());
         return problemDetail;
     }
@@ -91,29 +86,27 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ApiProblemDetail handleResourceNotFoundException(ResourceNotFoundException ex) {
         String requestId = ex.getRequestId() != null ? ex.getRequestId() : generateRequestId();
-        
+
         ApiProblemDetail problemDetail = ProblemDetailBuilder.createProblemDetail(
                 HttpStatus.NOT_FOUND,
                 ex.getCode() != null ? ex.getCode() : ErrorConstants.RESOURCE_NOT_FOUND,
                 ex.getMessage(),
-                requestId
-        );
-        
+                requestId);
+
         problemDetail.setProperty("errorType", ex.getClass().getSimpleName());
         return problemDetail;
     }
-    
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ApiProblemDetail handleNoResourceFoundException(NoResourceFoundException ex) {
         String requestId = generateRequestId();
-        
+
         ApiProblemDetail problemDetail = ProblemDetailBuilder.createProblemDetail(
                 HttpStatus.NOT_FOUND,
                 ErrorConstants.RESOURCE_NOT_FOUND,
                 "The requested resource was not found: " + ex.getResourcePath(),
-                requestId
-        );
-        
+                requestId);
+
         problemDetail.setProperty("errorType", ex.getClass().getSimpleName());
         return problemDetail;
     }
@@ -121,16 +114,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ApiProblemDetail handleAllExceptions(Exception ex, HttpServletRequest request) {
         String requestId = generateRequestId();
-        
+
         // Log the full exception for debugging purposes
         log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        
+
         ApiProblemDetail problemDetail = ProblemDetailBuilder.createInternalServerError(
                 ErrorConstants.SERVER_ERROR,
                 "An unexpected error occurred: " + ex.getMessage(),
-                requestId
-        );
-        
+                requestId);
+
         problemDetail.setProperty("errorType", ex.getClass().getSimpleName());
         return problemDetail;
     }
