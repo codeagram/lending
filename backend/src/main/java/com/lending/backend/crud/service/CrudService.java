@@ -1,12 +1,10 @@
 package com.lending.backend.crud.service;
 
+import com.lending.backend.common.dto.PagedResult;
+import com.lending.backend.common.exception.ResourceNotFoundException;
 import com.lending.backend.crud.annotations.MultiTenant;
-import com.lending.backend.crud.dto.PagedResult;
-import com.lending.backend.crud.entity.BaseEntity;
+import com.lending.backend.common.audit.BaseEntity;
 import com.lending.backend.crud.entity.BranchAwareEntity;
-import com.lending.backend.crud.entity.SoftDeleteEntity;
-import com.lending.backend.crud.exception.EntityNotFoundException;
-import com.lending.backend.crud.exception.UnauthorizedException;
 import com.lending.backend.crud.repository.CrudRepository;
 import com.lending.backend.crud.service.audit.AuditService;
 import com.lending.backend.crud.service.cache.CacheService;
@@ -16,9 +14,9 @@ import com.lending.backend.crud.service.permission.PermissionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public abstract class CrudService<T extends BaseEntity> {
@@ -146,7 +144,7 @@ public abstract class CrudService<T extends BaseEntity> {
         T entity = findEntityById(id);
         hookService.executeBeforeDelete(getEntityName(), entity);
 
-        if (isSoftDeleteEnabled() && entity instanceof SoftDeleteEntity) {
+        if (isSoftDeleteEnabled()) {
             performSoftDelete(entity);
         } else {
             repository.delete(entity);
@@ -180,13 +178,13 @@ public abstract class CrudService<T extends BaseEntity> {
         spec = applySecurityFilters(spec);
 
         return repository.findOne(spec)
-                .orElseThrow(() -> new EntityNotFoundException(getEntityName(), id));
+                .orElseThrow(() -> new ResourceNotFoundException(getEntityName(), "id", id));
     }
 
     private void checkPermission(String action) {
         String permission = getEntityName().toLowerCase() + ":" + action;
         if (!permissionService.hasPermission(permission)) {
-            throw new UnauthorizedException(
+            throw new AccessDeniedException(
                     "Access denied for action '" + action + "' on entity '" + getEntityName() + "'");
         }
     }
@@ -197,12 +195,36 @@ public abstract class CrudService<T extends BaseEntity> {
         }
     }
 
+    protected boolean isSoftDeleteEnabled() {
+        return true; // Default to soft delete as per requirements
+    }
+
+    protected Specification<T> includeDeleted(Specification<T> spec) {
+        // If soft delete is enabled, modify the spec to include only non-deleted items
+        if (isSoftDeleteEnabled()) {
+            return (root, query, cb) -> {
+                if (spec == null) {
+                    return cb.isFalse(root.get("isDeleted"));
+                }
+                return cb.and(
+                        spec.toPredicate(root, query, cb),
+                        cb.isFalse(root.get("isDeleted")));
+            };
+        }
+        return spec;
+    }
+
     private void performSoftDelete(T entity) {
-        SoftDeleteEntity softDeleteEntity = (SoftDeleteEntity) entity;
-        softDeleteEntity.setIsDeleted(true);
-        softDeleteEntity.setDeletedAt(LocalDateTime.now());
-        softDeleteEntity.setDeletedBy(securityContextService.getCurrentUserId());
-        repository.save(entity);
+        entity.setDeleted(true);
+        entity.setDeletedAt(java.time.Instant.now());
+        entity.setDeletedBy(securityContextService.getCurrentUserId());
+
+        T savedEntity = repository.save(entity);
+        auditService.logDelete(getEntityName(), entity.getId().toString(), savedEntity);
+
+        // Clear relevant caches
+        cacheService.evict(getEntityName(), generateCacheKey("findById", entity.getId()));
+        clearEntityCache();
     }
 
     private void executePostCreateActions(T newEntity) {
@@ -230,9 +252,7 @@ public abstract class CrudService<T extends BaseEntity> {
         return getEntityClass().isAnnotationPresent(MultiTenant.class);
     }
 
-    private boolean isSoftDeleteEnabled() {
-        return SoftDeleteEntity.class.isAssignableFrom(getEntityClass());
-    }
+    // isSoftDeleteEnabled() is already defined above
 
     private String generateCacheKey(String operation, Object... params) {
         StringBuilder key = new StringBuilder(operation);

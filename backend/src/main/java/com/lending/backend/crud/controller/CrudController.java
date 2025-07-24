@@ -1,9 +1,9 @@
 package com.lending.backend.crud.controller;
 
-import com.lending.backend.crud.entity.BaseEntity;
+import com.lending.backend.common.audit.BaseEntity;
 import com.lending.backend.crud.service.CrudService;
-import com.lending.backend.crud.dto.ApiResponse;
-import com.lending.backend.crud.dto.PagedResult;
+import com.lending.backend.common.dto.ApiResponse;
+import com.lending.backend.common.dto.PagedResult;
 import com.lending.backend.crud.util.SpecificationBuilder;
 
 import org.springframework.beans.factory.annotation.Autowired;

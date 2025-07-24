@@ -1,6 +1,6 @@
 package com.lending.backend.crud.util;
 
-import com.lending.backend.crud.entity.BaseEntity;
+import com.lending.backend.common.audit.BaseEntity;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 

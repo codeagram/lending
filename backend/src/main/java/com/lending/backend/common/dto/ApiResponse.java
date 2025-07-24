@@ -1,4 +1,4 @@
-package com.lending.backend.crud.dto;
+package com.lending.backend.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

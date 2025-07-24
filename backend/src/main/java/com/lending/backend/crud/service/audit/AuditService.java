@@ -2,8 +2,8 @@ package com.lending.backend.crud.service.audit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lending.backend.common.audit.BaseEntity;
 import com.lending.backend.crud.entity.AuditTrail;
-import com.lending.backend.crud.entity.BaseEntity;
 import com.lending.backend.crud.repository.AuditTrailRepository;
 import com.lending.backend.crud.service.context.SecurityContextService;
 import org.springframework.beans.factory.annotation.Autowired;

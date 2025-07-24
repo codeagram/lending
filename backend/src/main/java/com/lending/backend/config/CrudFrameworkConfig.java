@@ -1,4 +1,4 @@
-package com.lending.backend.crud.config;
+package com.lending.backend.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;

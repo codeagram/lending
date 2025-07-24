@@ -1,7 +1,7 @@
 package com.lending.backend.crud.service.hook;
 
 import com.lending.backend.crud.annotations.*;
-import com.lending.backend.crud.entity.BaseEntity;
+import com.lending.backend.common.audit.BaseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;

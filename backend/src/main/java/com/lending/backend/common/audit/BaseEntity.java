@@ -1,8 +1,7 @@
 package com.lending.backend.common.audit;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.envers.Audited;
@@ -22,19 +21,19 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Base entity class that provides common fields and functionality for all JPA entities.
+ * Base entity class that provides common fields and functionality for all JPA
+ * entities.
  * Includes:
  * - UUID v7 as primary key
  * - Audit fields (createdBy, createdAt, lastModifiedBy, lastModifiedAt)
- * - Soft delete support (deleted, deletedAt, deletedBy)
+ * - Soft delete support (isDeleted, deletedAt, deletedBy)
  * - Version for optimistic locking
  */
-@Getter
-@Setter
+@Data
 @MappedSuperclass
 @Audited
-@SQLDelete(sql = "UPDATE ${entity.name} SET deleted = true, deleted_at = NOW(), deleted_by = CURRENT_USER WHERE id = ?")
-@SQLRestriction("deleted = false")
+@SQLDelete(sql = "UPDATE ${entity.name} SET is_deleted = true, deleted_at = NOW(), deleted_by = CURRENT_USER WHERE id = ?")
+@SQLRestriction("is_deleted = false")
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity implements Serializable {
 
@@ -65,8 +64,8 @@ public abstract class BaseEntity implements Serializable {
     @Column(name = "last_modified_at")
     private Instant lastModifiedAt;
 
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean deleted = false;
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
+    private boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
@@ -78,13 +77,13 @@ public abstract class BaseEntity implements Serializable {
     public void prePersist() {
         SecurityContext context = SecurityContextHolder.getContext();
         String username = "system";
-        
-        if (context != null && context.getAuthentication() != null && 
-            context.getAuthentication().isAuthenticated()) {
+
+        if (context != null && context.getAuthentication() != null &&
+                context.getAuthentication().isAuthenticated()) {
             Authentication auth = context.getAuthentication();
             username = auth.getName();
         }
-        
+
         this.createdBy = username;
         this.lastModifiedBy = username;
         this.createdAt = java.time.LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).toInstant();
@@ -96,13 +95,13 @@ public abstract class BaseEntity implements Serializable {
         this.lastModifiedAt = Instant.now();
         SecurityContext context = SecurityContextHolder.getContext();
         String username = "system";
-        
-        if (context != null && context.getAuthentication() != null && 
-            context.getAuthentication().isAuthenticated()) {
+
+        if (context != null && context.getAuthentication() != null &&
+                context.getAuthentication().isAuthenticated()) {
             Authentication auth = context.getAuthentication();
             username = auth.getName();
         }
-        
+
         this.lastModifiedBy = username;
     }
 
@@ -130,7 +129,7 @@ public abstract class BaseEntity implements Serializable {
                 ", createdAt=" + createdAt +
                 ", lastModifiedBy='" + lastModifiedBy + '\'' +
                 ", lastModifiedAt=" + lastModifiedAt +
-                ", deleted=" + deleted +
+                ", isDeleted=" + isDeleted +
                 ", deletedAt=" + deletedAt +
                 ", deletedBy='" + deletedBy + '\'' +
                 '}';

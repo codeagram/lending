@@ -1,6 +1,6 @@
 package com.lending.backend.crud.repository;
 
-import com.lending.backend.crud.entity.BaseEntity;
+import com.lending.backend.common.audit.BaseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

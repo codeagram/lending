@@ -8,7 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -97,18 +97,14 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ApiProblemDetail handleNoResourceFoundException(NoResourceFoundException ex) {
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ApiProblemDetail handleNoHandlerFoundException(NoHandlerFoundException ex) {
         String requestId = generateRequestId();
-
-        ApiProblemDetail problemDetail = ProblemDetailBuilder.createProblemDetail(
+        return ProblemDetailBuilder.createProblemDetail(
                 HttpStatus.NOT_FOUND,
                 ErrorConstants.RESOURCE_NOT_FOUND,
-                "The requested resource was not found: " + ex.getResourcePath(),
+                "No handler found for: " + ex.getHttpMethod() + " " + ex.getRequestURL(),
                 requestId);
-
-        problemDetail.setProperty("errorType", ex.getClass().getSimpleName());
-        return problemDetail;
     }
 
     @ExceptionHandler(Exception.class)

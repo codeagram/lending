@@ -1,5 +1,7 @@
 package com.lending.backend.crud.entity;
 
+import com.lending.backend.common.audit.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

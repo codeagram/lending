@@ -1,4 +1,4 @@
-package com.lending.backend.crud.dto;
+package com.lending.backend.common.dto;
 
 import org.springframework.data.domain.Page;
 
